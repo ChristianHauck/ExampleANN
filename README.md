@@ -8,4 +8,5 @@ The code is not designed to be efficient, sophisticated or whatever - but just t
 
 The project and all its files are provided under the GNU GENERAL PUBLIC LICENSE Version 3, see the file LICENSE.
 
-(c) 2016 Christian Hauck
+(c) 2016 Christian Hauck, all rights reserved.
+
