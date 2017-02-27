@@ -1,4 +1,4 @@
-# ExampleANN
+-# ExampleANN
 
 Python 2.7 code for a Single-Layer-Perceptron (slp) and a flexible Multi-Layer-Perceptron (mlp)
 
@@ -10,5 +10,5 @@ The code is not designed to be efficient, sophisticated or whatever - but just t
 
 The project and all its files are provided under the GNU GENERAL PUBLIC LICENSE Version 3, see the file LICENSE.
 
-(c) 2016 Christian Hauck, all rights reserved.
+(c) 2016-2017 Christian Hauck, all rights reserved.
 
