@@ -9,6 +9,7 @@ import numpy as np
 from layer import Layer
 from functions import Functions
 import math
+import time
 
 
 class MLP():
@@ -71,6 +72,32 @@ class MLP():
         return
 
 
+    def test_encoder(self, learn_rate, num_loops):
+        # Inputs
+        M_in = np.array([
+            [-1,0,0],
+            [-1,0,1],
+            [-1,1,0],
+            [-1,1,1]
+            ])
+        v_target = np.array([
+            [0.1, 0.2],
+            [0.3, 0.4],
+            [0.6, 0.6],
+            [0.9, 0.8],
+            ])
+        #Initialize
+        self.init_layers('sigmoid')
+        # training
+        self.learn(
+            M_in,       # input matrix/vectors
+            v_target,   # output target vector of "or" function
+            learn_rate, # learning rate
+            num_loops   # number of loops
+            )
+        return
+
+
     def learn(self, M_x, v_y, learning_rate, max_loops=1000):
         loop_nr = 0
         while True:
@@ -101,7 +128,7 @@ class MLP():
                     layer_m = self.layers[l]
                     layer_m_plus_1 = self.layers[l+1]
                     delta_m = layer_m.deriv_act(layer_m.RAW_OUT) * \
-                                   np.dot(layer_m_plus_1.weight_matrix.T, layer_m_plus_1.DELTA)
+                              np.dot(layer_m_plus_1.weight_matrix.T, layer_m_plus_1.DELTA)
                     layer_m.DELTA = delta_m
 
                 # And finally adjust weights.
@@ -118,7 +145,7 @@ class MLP():
             loop_nr += 1
 
             if error < 0.001 or loop_nr > max_loops:
-                print("learning loops: ", loop_nr)
+                # print("learning loops: ", loop_nr)
                 break  # while
 
         return
@@ -145,3 +172,10 @@ if __name__ == '__main__':
     # Main entry point for tests
     mlp = MLP([3,5,2])
     mlp.test_encoder(10, 1000)
+
+    # Test
+    start_time = time.time()
+    for i in range(10):
+        mlp.test_encoder(10, 1000)
+    elapsed_time = time.time() - start_time
+    print("elapsed time: ", elapsed_time, " s")

@@ -12,7 +12,7 @@ import numpy as np
 import math
 
 
-class Functions():
+class Functions:
     def __init__(self):
         pass
 
@@ -25,7 +25,7 @@ class Functions():
         ones = np.ones_like(v_in)
         zeros = np.zeros_like(v_in)
         minus_x = zeros - v_in
-        cx = minus_x / 1    # 1 is the "temperature-parameter"
+        cx = minus_x # / 1    # 1 is the "temperature-parameter"
         result = ones / (ones + np.exp(cx))
         return result
 
@@ -36,7 +36,7 @@ class Functions():
         # result = sigmoid(v_in) * (ones - sigmoid(v_in))
         zeros = np.zeros_like(v_in)
         minus_x = zeros - v_in
-        cx = minus_x / 1
+        cx = minus_x # / 1
         result = (ones / (ones + np.exp(cx))) * (ones - (ones / (ones + np.exp(cx))))
         return result
 
@@ -53,7 +53,7 @@ class Functions():
         return v_out
 
 
-    def id_fu(self, v_in):
+    def id_fu(v_in):
         return v_in
 
 
@@ -64,7 +64,6 @@ class Functions():
         return 1
 
 
-    @staticmethod
     def signum(v_in):
         v_out = np.sign(v_in)
         return v_out
@@ -72,8 +71,6 @@ class Functions():
 
     theta = 0.0
 
-
-    @staticmethod
     def threshold(v_in):
         if type(v_in) is list:
             v_out = np.copy(v_in)
@@ -90,7 +87,6 @@ class Functions():
                 return 0
 
 
-    @staticmethod
     def depricated_int_threshold(x):
         if x >= Functions.theta :
             return 1
@@ -98,13 +94,11 @@ class Functions():
             return 0
 
 
-
     #
     #   ---===### Function Directories ###===---
     #
     get_fu = {'sigmoid': sigmoid, 'tanh' : tanh, 'lin' : id_fu, 'threshold' : threshold}
     get_deriv = {'sigmoid': deriv_sigmoid, 'tanh': deriv_tanh, 'lin': id_fu}
-
 
 
     #
@@ -130,8 +124,6 @@ class Functions():
         return result
 
 
-
 if __name__ == '__main__':
-    # Main entry point for tests
     func = Functions()
     func.test()

@@ -20,7 +20,7 @@ class SLP():    # Single Layer Perceptron
 
 
     def test_sigmoid(self):
-        layer = Layer(3, 1, threshold=0.0, activation='sigmoid')
+        layer = Layer(3, 2, threshold=0.0, activation='sigmoid')
         M_in = np.array([
             [-1,0,0],
             [-1,0,1],
@@ -60,8 +60,8 @@ class SLP():    # Single Layer Perceptron
             #[9]
             ])
 
-        m_weights = np.random.rand(layer.num_nodes, layer.num_in)
-        #m_weights = np.full((layer.num_nodes, layer.num_in), 0.0)
+        #m_weights = np.random.rand(layer.num_nodes, layer.num_in)
+        m_weights = np.full((layer.num_nodes, layer.num_in), 0.0)
         layer.init_weights(m_weights)
 
         layer.show("before training", M_in, v_target)  # before training
