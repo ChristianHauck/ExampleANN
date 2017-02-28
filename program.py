@@ -9,6 +9,7 @@
 from layer2 import Layer2
 from mlp import MLP
 from mlp2 import MLP2
+from utils import Utils
 import numpy as np
 import time
 
@@ -65,36 +66,43 @@ class Program:
         return
 
 
-if __name__ == '__main__':
-    # Single Perceptron-Layer
-    layer = Layer2(num_in=4, num_out=2)
-    layer.input = np.array([0, 0, 0, 1])
-    layer.weights = np.random.rand(4, 2)
-    layer.run()
+    def benchmark(self):
+        # Single Perceptron-Layer
+        layer = Layer2(num_in=4, num_out=2)
+        layer.input = np.array([0, 0, 0, 1])
+        layer.weights = np.random.rand(4, 2)
+        layer.run()
 
-    rounds = 5000
-    tick_down = 1000
-    # Multi-Layer-Perceptron
-    mlp = MLP2([3, 5, 2])
-    mlp.init_layers()
-    mlp.set_activation("sigmoid")
-    # Test
-    prog = Program()
-    prog.set_input_1()
-    start_time = time.time()
-    for i in range(rounds):
-        prog.test2(mlp, 10, 1000)
-    elapsed_1 = time.time() - start_time
-    print("numpy elapsed time: ", elapsed_1, " s")
+        rounds = 1000
+        tick_down = 1000
+        # Multi-Layer-Perceptron
+        mlp = MLP2([3, 5, 2])
+        mlp.init_layers()
+        mlp.set_activation("sigmoid")
+        # Test
+        self.set_input_1()
+        start_time = time.time()
+        for i in range(rounds):
+            self.test2(mlp, 10, 1000)
+        elapsed_1 = time.time() - start_time
+        print "numpy elapsed time: ", elapsed_1, "s"
 
-    # Partly numpy version
-    mlp = MLP([3, 5, 2])
-    mlp.test_encoder(10, 1000)
-    # Test
-    start_time = time.time()
-    for i in range(rounds / tick_down):
+        # Partly numpy version
+        mlp = MLP([3, 5, 2])
         mlp.test_encoder(10, 1000)
-    elapsed_2 = time.time() - start_time
-    print("mixed elapsed time: ", elapsed_2, " s")
+        # Test
+        start_time = time.time()
+        for i in range(rounds / tick_down):
+            mlp.test_encoder(10, 1000)
+        elapsed_2 = time.time() - start_time
+        print "mixed elapsed time: ", elapsed_2, "s"
 
-    print("speed factor: ", elapsed_2 / elapsed_1 * tick_down)
+        print "speed factor: ", elapsed_2 / elapsed_1 * tick_down
+
+
+if __name__ == '__main__':
+    prog = Program()
+    # prog.benchmark()
+    num_items, rows, columns, data = Utils.load_mnist_data(Utils.mnist_train_data)
+    print "num_items=", num_items, " rows=", rows, " columns=", columns
+    print data[0]
