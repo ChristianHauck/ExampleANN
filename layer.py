@@ -41,7 +41,7 @@ class Layer():
     def init_weights(self, m_weights):
         assert m_weights.ndim == 2 and m_weights.shape == (self.num_nodes, self.num_in)
         self.weight_matrix = m_weights
-        self.v_threshold = np.full((self.num_nodes), self.threshold)
+        self.v_threshold = np.full(self.num_nodes, self.threshold)
         return
 
 

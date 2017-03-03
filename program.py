@@ -10,8 +10,12 @@ from layer2 import Layer2
 from mlp import MLP
 from mlp2 import MLP2
 from utils import Utils
+from twisted.internet import reactor
+from chat import ChatFactory
 import numpy as np
+import matplotlib.pyplot as plt
 import time
+from thread import start_new_thread
 
 
 class Program:
@@ -100,9 +104,37 @@ class Program:
         print "speed factor: ", elapsed_2 / elapsed_1 * tick_down
 
 
+    def view_image(self, image_data):
+        image_data = image_data.reshape((28, 28))
+        fig, ax = plt.subplots()
+        ax.imshow(image_data, cmap='gray')
+        plt.show()
+
+
+
 if __name__ == '__main__':
+
+    #reactor.listenTCP(8124, ChatFactory())
+    #reactor.run()
+
     prog = Program()
     # prog.benchmark()
-    num_items, rows, columns, data = Utils.load_mnist_data(Utils.mnist_train_data)
-    print "num_items=", num_items, " rows=", rows, " columns=", columns
-    print data[0]
+
+    max_items = 1
+    num_images, rows, columns, images, raw_images = Utils.load_mnist_data(Utils.mnist_train_data, max_items=max_items)
+    num_labels, labels, lbl_vals = Utils.load_mnist_labels(Utils.mnist_train_labels, max_items=max_items)
+    print "num_images=", num_images, " rows=", rows, " columns=", columns
+    print images[0]
+    print "num_labels=", num_labels
+    print labels[0], " = ", lbl_vals[0]
+    for i in range(max_items):
+        prog.view_image(raw_images[i])
+        # start_new_thread(prog.view_image, (raw_images[i],))
+
+    mlp = MLP2([])
+
+    print "Enter something"
+    while 1:
+        inp = raw_input()
+        if inp == "quit":
+            break
