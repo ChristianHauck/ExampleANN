@@ -1,18 +1,18 @@
 #!/usr/bin/env python2
 # -*- coding: utf-8 -*-
 #
-# Copyright (C) 2015, Christian Hauck
+# Copyright (C) 2017, Christian Hauck
 #
 # Author: Christian Hauck, <christian_hauck@yahoo.com>
+#
 
-import numpy as np
 from layer import Layer
 from functions import Functions
+import numpy as np
 import math
-import time
 
 
-class MLP():
+class MLP:
 
     def __init__(self, dimensions): # first element = input-dim, the following = layer-dims
         self.num_layers = len(dimensions) - 1   # -1 : subtract input-dim
@@ -22,125 +22,83 @@ class MLP():
             num_in = dimensions[i]
             num_out = dimensions[i+1]
             self.layers.append(Layer(num_in, num_out))
-
+        # activation functions
+        self.activation_str = None
+        self.functions = Functions()
         return
 
 
-    def init_layers(self, fu_name):
-        for l in self.layers:
-            m_weights = np.random.rand(l.num_nodes, l.num_in) / 1
-            # m_weights = np.full((l.num_nodes, l.num_in), 0.0)
-            l.init_weights(m_weights)
-
-            # overwrite default-activation set at layer-construction in __init__
-            l.init_activation(fu_name)
+    def init_layers(self):
+        for layer in self.layers:
+            rnd_wght = np.random.rand(layer.num_out, layer.num_in) / 1
+            layer.init_weights(rnd_wght)
 
 
-    def test_encoder(self, learn_rate, num_loops):
-        # Inputs
-        M_in = np.array([
-            [-1,0,0],
-            [-1,0,1],
-            [-1,1,0],
-            [-1,1,1]
-            ])
-        v_target = np.array([
-            [0.1, 0.2],
-            [0.3, 0.4],
-            [0.6, 0.6],
-            [0.9, 0.8],
-            ])
-
-        #Initialize
-        self.init_layers('sigmoid')
-        self.show("before training", M_in, v_target)  # before training
-
-        # training
-        self.learn(
-            M_in,       # input matrix/vectors
-            v_target,   # output target vector of "or" function
-            learn_rate, # learning rate
-            num_loops   # number of loops
-            )
-
-        self.show("after training", M_in, v_target)  # after training
-
-        # Now test an input vector unknown to the net
-        arr = np.array([-1, 0.8, 0.7])
-        print('Testing network with input ', arr, ' : ', self.run(arr))
-
-        return
+    def set_activation(self, activation_str):
+        self.activation_str = activation_str
 
 
-    def test_encoder(self, learn_rate, num_loops):
-        # Inputs
-        M_in = np.array([
-            [-1,0,0],
-            [-1,0,1],
-            [-1,1,0],
-            [-1,1,1]
-            ])
-        v_target = np.array([
-            [0.1, 0.2],
-            [0.3, 0.4],
-            [0.6, 0.6],
-            [0.9, 0.8],
-            ])
-        #Initialize
-        self.init_layers('sigmoid')
-        # training
-        self.learn(
-            M_in,       # input matrix/vectors
-            v_target,   # output target vector of "or" function
-            learn_rate, # learning rate
-            num_loops   # number of loops
-            )
-        return
+    def activation(self, vector):
+        result = self.functions.get_fu[self.activation_str](vector)
+        return result
 
 
-    def learn(self, M_x, v_y, learning_rate, max_loops=1000):
+    def deriv_act(self, vector):
+        result = self.functions.get_deriv[self.activation_str](vector)
+        return result
+
+
+    def learn(self, m_x, m_y, learning_rate, max_loops=1000):
         loop_nr = 0
         while True:
-            for i in range(M_x.shape[0]):                  # for each example - index: i
+            for i in range(len(m_x)):                  # for each example - index: i
                 # Just copy the input into INPUT of layer 0
-                self.layers[0].IN = M_x[i]
+                self.layers[0].input = m_x[i]
 
                 # Now propagate a[0] forward and store the interim results a[l] for the layers l
-                for l in range(self.num_layers):    # for each layer except of the first - index l
-                    layer = self.layers[l]
-                    y = np.empty((layer.num_nodes))
-                    res = np.empty((layer.num_nodes))
-                    for j in range(layer.num_nodes):    # for each row in weight matrix of layer l - index j
-                        res[j] = np.dot(layer.weight_matrix[j], layer.IN)
-                        y[j] = layer.activation(res[j])
+                # for l in range(self.num_layers):    # for each layer except of the first - index l
+                #     layer = self.layers[l]
+                #     y = np.empty(layer.num_out)
+                #     res = np.empty(layer.num_out)
+                #     for j in range(layer.num_out):    # for each row in weight matrix of layer l - index j
+                #         res[j] = np.dot(layer.weights[j], layer.input)
+                #         y[j] = self.activation(res[j])
+                #
+                #     layer.sum = res   # = SUM(wv)
+                #     layer.output = y  # = g(RAW_OUT) = g(SUM(wv))
+                #     if l < self.num_layers - 1:
+                #         self.layers[l + 1].input = np.copy(self.layers[l].output)
 
-                    layer.OUT = y       # = g(RAW_OUT) = g(SUM(wv))
-                    layer.RAW_OUT = res # = SUM(wv)
-                    if l < self.num_layers - 1:
-                        self.layers[l + 1].IN = self.layers[l].OUT
+                for l in range(self.num_layers):
+                    self.layers[l].sum = np.dot(self.layers[l].weights, self.layers[l].input)
+                    self.layers[l].output = self.activation(self.layers[l].sum)
+                    if (l < self.num_layers - 1):
+                        self.layers[l + 1].input = self.layers[l].output
 
                 # Compute the error at the output layer
                 out_layer = self.layers[self.num_layers - 1]  # output layer
-                out_layer.DELTA = out_layer.deriv_act(out_layer.RAW_OUT) * (v_y[i] - out_layer.OUT) # i = example index
+                out_layer.delta = self.deriv_act(out_layer.output) * (m_y[i] - out_layer.output) # i = example index
 
                 # Compute the other deltas, backwards running through the layers
                 for l in reversed(range(self.num_layers - 1)):
                     layer_m = self.layers[l]
                     layer_m_plus_1 = self.layers[l+1]
-                    delta_m = layer_m.deriv_act(layer_m.RAW_OUT) * \
-                              np.dot(layer_m_plus_1.weight_matrix.T, layer_m_plus_1.DELTA)
-                    layer_m.DELTA = delta_m
+                    delta_m = self.deriv_act(layer_m.sum) * \
+                              np.dot(layer_m_plus_1.weights.T, layer_m_plus_1.delta)
+                    layer_m.delta = delta_m
 
                 # And finally adjust weights.
                 # This may be done in forward order because all data are available here.
                 for l in range(self.num_layers):
                     layer = self.layers[l]
-                    for j in range(layer.num_nodes):
-                        delta_w = learning_rate * layer.DELTA[j] * layer.IN
-                        layer.weight_matrix[j] = layer.weight_matrix[j] + delta_w
+                    for j in range(layer.num_out):
+                        delta_w = learning_rate * layer.delta[j] * layer.input
+                        row = layer.weights[j] + delta_w
+                        layer.weights[j] = row
+                        # layer.weights[j] = layer.weights[j] + delta_w
 
             # Calculate a more or less reasonable error metric
-            error = Functions.squared_error(v_y[i], self.layers[self.num_layers - 1].OUT)
+            error = Functions.squared_error(m_y[i], self.layers[self.num_layers - 1].output)
             error = math.sqrt(error)
             loop_nr += 1
 
@@ -152,30 +110,29 @@ class MLP():
 
 
     def run(self, x):
-        for i in range(self.num_layers):
-            y = self.layers[i].run_wo_thr(x)
-            x = y
-        return y
+        self.layers[0].input = x
+        for l in range(self.num_layers):
+            self.layers[l].sum = np.dot(self.layers[l].weights, self.layers[l].input)
+            # self.layers[l].output = self.activation(self.layers[l].sum)
+            self.layers[l].output = self.activation(self.layers[l].sum)
+            if (l < self.num_layers - 1):
+                self.layers[l+1].input = self.layers[l].output
+        #
+        return self.layers[self.num_layers - 1].output
 
 
-    def show(self, out_str, M_in, v_desired_out):
+    def show(self, out_str, m_x, m_y):
         print(out_str)
-        for i in range(self.num_layers):
-            print("weigt matrix: ", self.layers[i].weight_matrix)
-        for i in range(M_in.shape[0]):
-            result = self.run(M_in[i])
-            print("input ", M_in[i], "desired output ", v_desired_out[i], " output ", result)
-
+        # for i in range(self.num_layers):
+        #     print("weigt matrix: ", self.layers[i].weights)
+        for i in range(len(m_x)):
+            result = self.run(m_x[i])
+            # print("input ", m_x[i], "desired output ", m_y[i], " output ", result)
+            print("desired output ", m_y[i])
+            print("output ", result)
 
 
 if __name__ == '__main__':
-    # Main entry point for tests
     mlp = MLP([3,5,2])
-    mlp.test_encoder(10, 1000)
-
-    # Test
-    start_time = time.time()
-    for i in range(10):
-        mlp.test_encoder(10, 1000)
-    elapsed_time = time.time() - start_time
-    print("elapsed time: ", elapsed_time, " s")
+    mlp.init_layers()
+    mlp.init_activation("sigmoid")
