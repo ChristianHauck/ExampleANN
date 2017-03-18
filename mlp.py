@@ -30,7 +30,7 @@ class MLP:
 
     def init_layers(self):
         for layer in self.layers:
-            rnd_wght = np.random.rand(layer.num_out, layer.num_in) / 1
+            rnd_wght = (np.random.rand(layer.num_out, layer.num_in) * 2.0 - 1.0) / 100
             layer.init_weights(rnd_wght)
 
 
@@ -120,6 +120,7 @@ class MLP:
         for i in range(len(m_x)):
             result = self.run(m_x[i])
             # print("input ", m_x[i], "desired output ", m_y[i], " output ", result)
+            #print("input ", m_x[i])
             print("desired output ", m_y[i])
             print("output ", result)
 

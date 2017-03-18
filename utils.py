@@ -39,12 +39,16 @@ class Utils:
         #
         images = []
         for d in data:
-            img_vec = np.zeros((img_size + 1,), dtype=float)    # +1 for the mandatory -1
-            img_vec[0] = -1.0
+
             # Option to make the data much smaller for testing purposes
             if only_subset:
-                img_vec[1:] = d[14]  # take only row 14 - it should hold some pixel set
+                img_vec = np.zeros((columns + 1,), dtype=float)  # +1 for the mandatory -1
+                img_vec[0] = -1.0
+                d = d.reshape((rows, columns))
+                img_vec[1:] = d[10]  # take only row 10 - it should hold some pixel set
             else:
+                img_vec = np.zeros((img_size + 1,), dtype=float)  # +1 for the mandatory -1
+                img_vec[0] = -1.0
                 img_vec[1:] = d
             images.append(img_vec)
         #
@@ -54,7 +58,7 @@ class Utils:
     @classmethod
     def load_mnist_labels(cls, file_name, max_items=-1):
         f = open('./data/' + file_name, 'rb')
-        magic = f.read(4)  # ignore
+        magic = f.read(4)  # ignore "magic" number
         num_items = struct.unpack('>i', f.read(4))[0]
         if max_items >= 0:
             num_items = max_items
@@ -65,6 +69,7 @@ class Utils:
         labels = []
         for d in data:
             lbl_vec = np.zeros((10,), dtype=float)
+            # lbl_vec = np.ones((10,), dtype=float) / 100.0
             lbl_vec[d] = 1.0
             labels.append(lbl_vec)
         #

@@ -90,7 +90,7 @@ class Program:
 
     def mnist(self):
         ###--- Load images and labels from MNIST data set ---###
-        max_items = 1
+        max_items = 5
         num_images, rows, columns, images, raw_images = \
             Utils.load_mnist_data(Utils.mnist_train_data, max_items=max_items, only_subset=True)
         num_labels, labels, lbl_vals = \
@@ -104,25 +104,13 @@ class Program:
         # for i in range(max_items):
         #     prog.view_image(raw_images[i])
 
-        '''
-        ###--- Train and recognize one data set ---###
-        prog.set_input()
-        input_dim = prog.m_x[0].size
-        print "input_dim=", input_dim
-        mlp = MLP([input_dim, 5, 2])
-        mlp.init_layers()
-        mlp.set_activation("sigmoid")
-        self.run_mnist_data(mlp, prog.m_x, prog.m_y, 5, 1000)
-        mlp.show("Trained Network", prog.m_x, prog.m_y)
-        '''
-
         ###--- Train and recognize one data set ---###
         input_dim = images[0].size
         print "input_dim=", input_dim
-        mlp = MLP([input_dim, 25, 10])
+        mlp = MLP([input_dim, 10])
         mlp.init_layers()
         mlp.set_activation("sigmoid")
-        self.run_mnist_data(mlp, images, labels, 0.2, 1000)
+        self.run_mnist_data(mlp, images, labels, 0.1, 3000)
         mlp.show("Trained Network", images, labels)
 
 
@@ -131,7 +119,7 @@ class Program:
 if __name__ == '__main__':
 
     prog = Program()
-    prog.small_data()
+    # prog.small_data()
 
     prog.mnist()
 
