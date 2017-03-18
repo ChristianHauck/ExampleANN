@@ -116,6 +116,17 @@ class Functions:
     @staticmethod
     def squared_error(v_target, v_observed):
         assert v_target.size == v_observed.size
+        err = np.subtract(v_target, v_observed) # component-wise subtraction
+        prods = np.multiply(err, err)  # component-wise mmultiplication
+        sum = np.sum(prods)  # sum of the elements
+        normalized = 1.0 / v_target.size * sum
+        result = math.sqrt(normalized)
+        return result
+
+
+    @staticmethod
+    def squared_error_old(v_target, v_observed):
+        assert v_target.size == v_observed.size
         sum = 0
         for i in range(v_target.size):
             err = v_target[i] - v_observed[i]

@@ -28,15 +28,15 @@ class Program:
         self.m_x.append(np.array([-1, 1, 1]))
         
         self.m_y.append(np.array([0.1, 0.2]))
-        self.m_y.append(np.array([0.3, 0.4]))
-        self.m_y.append(np.array([0.6, 0.6]))
+        self.m_y.append(np.array([0.3, 0.45]))
+        self.m_y.append(np.array([0.6, 0.55]))
         self.m_y.append(np.array([0.9, 0.8]))
         
         return
 
 
-    def test(self, mlp, learn_rate, num_loops):
-        mlp.show("before training", self.m_x, self.m_y)  # before training
+    def run_small_data(self, mlp, learn_rate, num_loops):
+        # mlp.show("before training", self.m_x, self.m_y)  # before training
         # training
         mlp.learn(
             self.m_x,       # input matrix/vectors
@@ -45,7 +45,7 @@ class Program:
             num_loops   # number of loops
             )
         #
-        mlp.show("after training", self.m_x, self.m_y)  # after training
+        # mlp.show("after training", self.m_x, self.m_y)  # after training
         #
         # Now test an input vector unknown to the net
         arr = np.array([-1, 0.8, 0.7])
@@ -54,7 +54,7 @@ class Program:
         return
 
 
-    def run(self, mlp, m_x, m_y, learn_rate, num_loops):
+    def run_mnist_data(self, mlp, m_x, m_y, learn_rate, num_loops):
         # training
         mlp.learn(
             m_x,        # input matrix/vectors
@@ -77,43 +77,62 @@ class Program:
         plt.show()
 
 
+    def small_data(self):
+        mlp = MLP([3, 2])
+        mlp.init_layers()
+        mlp.set_activation("sigmoid")
+        #
+        self.set_input()
+        #
+        self.run_small_data(mlp, 0.1, 2000)
+        mlp.show("Small Data Test", self.m_x, self.m_y)
+
+
+    def mnist(self):
+        ###--- Load images and labels from MNIST data set ---###
+        max_items = 1
+        num_images, rows, columns, images, raw_images = \
+            Utils.load_mnist_data(Utils.mnist_train_data, max_items=max_items, only_subset=True)
+        num_labels, labels, lbl_vals = \
+            Utils.load_mnist_labels(Utils.mnist_train_labels, max_items=max_items)
+
+        ###--- Print one data set ---###
+        print "num_images=", num_images, " rows=", rows, " columns=", columns
+        # print images[0]
+        print "num_labels=", num_labels
+        print labels[0], " = ", lbl_vals[0]
+        # for i in range(max_items):
+        #     prog.view_image(raw_images[i])
+
+        '''
+        ###--- Train and recognize one data set ---###
+        prog.set_input()
+        input_dim = prog.m_x[0].size
+        print "input_dim=", input_dim
+        mlp = MLP([input_dim, 5, 2])
+        mlp.init_layers()
+        mlp.set_activation("sigmoid")
+        self.run_mnist_data(mlp, prog.m_x, prog.m_y, 5, 1000)
+        mlp.show("Trained Network", prog.m_x, prog.m_y)
+        '''
+
+        ###--- Train and recognize one data set ---###
+        input_dim = images[0].size
+        print "input_dim=", input_dim
+        mlp = MLP([input_dim, 25, 10])
+        mlp.init_layers()
+        mlp.set_activation("sigmoid")
+        self.run_mnist_data(mlp, images, labels, 0.2, 1000)
+        mlp.show("Trained Network", images, labels)
+
+
+
 
 if __name__ == '__main__':
 
     prog = Program()
+    prog.small_data()
 
-    ###--- Load images and labels from MNIST data set ---###
-    max_items = 30
-    num_images, rows, columns, images, raw_images = \
-        Utils.load_mnist_data(Utils.mnist_train_data, max_items=max_items)
-    num_labels, labels, lbl_vals = \
-        Utils.load_mnist_labels(Utils.mnist_train_labels, max_items=max_items)
+    prog.mnist()
 
-    ###--- Print one data set ---###
-    print "num_images=", num_images, " rows=", rows, " columns=", columns
-    # print images[0]
-    print "num_labels=", num_labels
-    print labels[0], " = ", lbl_vals[0]
-    # for i in range(max_items):
-    #     prog.view_image(raw_images[i])
-
-    ###--- Train and recognize one data set ---###
-    prog.set_input()
-    input_dim = prog.m_x[0].size
-    print "input_dim=", input_dim
-    mlp = MLP([input_dim, 5, 2])
-    mlp.init_layers()
-    mlp.set_activation("sigmoid")
-    prog.run(mlp, prog.m_x, prog.m_y, 5, 1000)
-    mlp.show("Trained Network", prog.m_x, prog.m_y)
-
-    #'''
-    ###--- Train and recognize one data set ---###
-    input_dim = images[0].size
-    print "input_dim=", input_dim
-    mlp = MLP([input_dim, 25, 10])
-    mlp.init_layers()
-    mlp.set_activation("sigmoid")
-    prog.run(mlp, images, labels, 0.2, 5000)
-    mlp.show("Trained Network", images, labels)
-    #'''
+    pass

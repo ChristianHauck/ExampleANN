@@ -51,33 +51,23 @@ class MLP:
     def learn(self, m_x, m_y, learning_rate, max_loops=1000):
         loop_nr = 0
         while True:
-            for i in range(len(m_x)):                  # for each example - index: i
+            error = 0.0
+            for ex in range(len(m_x)):                  # for each example - index: ex
                 # Just copy the input into INPUT of layer 0
-                self.layers[0].input = m_x[i]
+                self.layers[0].input = m_x[ex]
 
                 # Now propagate a[0] forward and store the interim results a[l] for the layers l
-                # for l in range(self.num_layers):    # for each layer except of the first - index l
-                #     layer = self.layers[l]
-                #     y = np.empty(layer.num_out)
-                #     res = np.empty(layer.num_out)
-                #     for j in range(layer.num_out):    # for each row in weight matrix of layer l - index j
-                #         res[j] = np.dot(layer.weights[j], layer.input)
-                #         y[j] = self.activation(res[j])
-                #
-                #     layer.sum = res   # = SUM(wv)
-                #     layer.output = y  # = g(RAW_OUT) = g(SUM(wv))
-                #     if l < self.num_layers - 1:
-                #         self.layers[l + 1].input = np.copy(self.layers[l].output)
-
                 for l in range(self.num_layers):
                     self.layers[l].sum = np.dot(self.layers[l].weights, self.layers[l].input)
                     self.layers[l].output = self.activation(self.layers[l].sum)
                     if (l < self.num_layers - 1):
                         self.layers[l + 1].input = self.layers[l].output
+                        # self.layers[l + 1].input = np.copy(self.layers[l].output)
 
                 # Compute the error at the output layer
                 out_layer = self.layers[self.num_layers - 1]  # output layer
-                out_layer.delta = self.deriv_act(out_layer.output) * (m_y[i] - out_layer.output) # i = example index
+                # m_y is not an mdarray! ToDo!
+                out_layer.delta = self.deriv_act(out_layer.sum) * (m_y[ex] - out_layer.output) # ex = example index
 
                 # Compute the other deltas, backwards running through the layers
                 for l in reversed(range(self.num_layers - 1)):
@@ -88,22 +78,24 @@ class MLP:
                     layer_m.delta = delta_m
 
                 # And finally adjust weights.
-                # This may be done in forward order because all data are available here.
+                # This can be done in forward order because all data are available here.
                 for l in range(self.num_layers):
                     layer = self.layers[l]
-                    for j in range(layer.num_out):
-                        delta_w = learning_rate * layer.delta[j] * layer.input
-                        row = layer.weights[j] + delta_w
-                        layer.weights[j] = row
+                    for i in range(layer.num_out):
+                        delta_w = learning_rate * layer.delta[i] * layer.input
+                        row = layer.weights[i] + delta_w
+                        layer.weights[i] = row
                         # layer.weights[j] = layer.weights[j] + delta_w
 
+                # Calculate a more or less reasonable error metric
+                error += Functions.squared_error(m_y[ex], self.layers[self.num_layers - 1].output)
+
             # Calculate a more or less reasonable error metric
-            error = Functions.squared_error(m_y[i], self.layers[self.num_layers - 1].output)
-            error = math.sqrt(error)
+            error /= len(m_x)
             loop_nr += 1
 
-            if error < 0.001 or loop_nr > max_loops:
-                # print("learning loops: ", loop_nr)
+            if error < 1.0E-9 or loop_nr >= max_loops * len(m_x):
+                print("learning loops: ", loop_nr / len(m_x))
                 break  # while
 
         return
